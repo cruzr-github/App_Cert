@@ -1,14 +1,7 @@
 {
   "functions": {
     "api/index.py": {
-      "includeFiles": [
-        "app.py",
-        "controllers/**",
-        "models/**",
-        "services/**",
-        "views/**",
-        "insumos/**"
-      ],
+      "includeFiles": "**/*",
       "maxDuration": 60
     }
   },
