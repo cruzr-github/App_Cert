@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Entrar | Academia Certificados{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 65vh;">
+    <div class="col-12 col-sm-9 col-md-6 col-lg-4">
+
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden tarjeta-login">
+            <!-- Encabezado azul marino con acento dorado -->
+            <div class="text-center px-4 py-4 encabezado-login">
+                <i class="bi bi-shield-lock-fill" style="font-size: 2.5rem; color: var(--color-secundario);"></i>
+                <h3 class="fw-bold text-white mb-1 mt-2">Acceso al sistema</h3>
+                <p class="mb-0 small text-white-50">Certificados de la Academia</p>
+            </div>
+
+            <div class="card-body p-4">
+                {% if modo_demo %}
+                <!-- Aviso visible solo cuando faltan las variables de entorno reales -->
+                <div class="alert alert-warning small mb-3" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    <strong>Modo demostración.</strong>
+                    No se encontraron las credenciales en el archivo <code>.env</code>.
+                    <hr class="my-2">
+                    <div><i class="bi bi-person-badge me-1"></i> Admin: <code>admin@academia.cr</code> / <code>admin123</code></div>
+                    <div><i class="bi bi-person me-1"></i> Usuario: <code>usuario@academia.cr</code> / <code>usuario123</code></div>
+                </div>
+                {% endif %}
+
+                {% if error %}
+                <!-- Mensaje rojo cuando el correo o la contraseña no coinciden -->
+                <div class="alert alert-danger small mb-3" role="alert">
+                    <i class="bi bi-x-circle-fill me-1"></i> {{ error }}
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}" novalidate>
+                    <div class="mb-3">
+                        <label for="correo" class="form-label fw-semibold">Correo electrónico</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-envelope"></i></span>
+                            <input type="email" class="form-control" id="correo" name="correo"
+                                   value="{{ correo or '' }}" placeholder="usuario@academia.cr"
+                                   autocomplete="username" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="clave" class="form-label fw-semibold">Contraseña</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-key"></i></span>
+                            <input type="password" class="form-control" id="clave" name="clave"
+                                   placeholder="••••••••" autocomplete="current-password" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-dorado w-100 py-2">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <p class="text-center text-muted small mt-3 mb-0">
+            <i class="bi bi-lock me-1"></i> Acceso exclusivo para personal autorizado
+        </p>
+    </div>
+</div>
+
+<style>
+    .encabezado-login {
+        background-color: var(--color-primario);
+        border-bottom: 4px solid var(--color-secundario);
+    }
+
+    .tarjeta-login {
+        border-top: 4px solid var(--color-secundario) !important;
+    }
+</style>
+{% endblock %}

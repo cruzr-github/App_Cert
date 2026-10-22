@@ -7,9 +7,14 @@
 # Caché y archivos compilados de Python
 __pycache__/
 *.pyc
+.pytest_cache/
 
 # Configuración y compilación de Vercel
 .vercel/
 
 # Archivos del sistema operativo
 .DS_Store
+
+# Bases de datos locales
+*.db
+

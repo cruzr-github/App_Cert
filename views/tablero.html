@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Tablero de Certificados | Academia{% endblock %}
+
+{% block content %}
+{% if datos_subidos %}
+<!-- Aviso obligatorio: los datos subidos no se guardan en ningún lado -->
+<div class="alert alert-success shadow-sm" role="alert">
+    <i class="bi bi-check-circle-fill me-1"></i>
+    <strong>Estos resultados son de los archivos que acabas de subir.</strong>
+    Viven solo en esta pantalla: si recargas la app o sales, volverás a los datos de fábrica,
+    porque todavía no hay un lugar donde guardarlos.
+</div>
+{% endif %}
+
+{% if error %}
+<!-- Los errores de carga se muestran aquí, sin dejar la página en blanco -->
+<div class="alert alert-danger shadow-sm" role="alert">
+    <i class="bi bi-exclamation-octagon-fill me-1"></i>
+    {{ error }}
+</div>
+{% endif %}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">
+            <i class="bi bi-award-fill me-2" style="color: var(--color-secundario);"></i>
+            Tablero de Certificación Académica
+        </h2>
+        <p class="text-muted mb-0">Consolidado oficial de notas, porcentajes de asistencia y emisión de diplomas.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        {% if session.get('rol') == 'admin' %}
+        <!-- Acciones exclusivas del administrador (también protegidas en Python) -->
+        {% if not datos_subidos %}
+        <a href="{{ url_for('tablero.descargar_todos') }}" class="btn btn-dorado shadow-sm">
+            <i class="bi bi-file-earmark-zip-fill me-1"></i> Descargar todos los certificados
+        </a>
+        {% endif %}
+        <a href="#panel-admin" class="btn btn-marino shadow-sm">
+            <i class="bi bi-arrow-repeat me-1"></i> Cargar Nuevos Excel
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if session.get('rol') == 'admin' %}
+<!-- Panel de administrador: visible solo para el rol admin -->
+<div class="card border-0 shadow-sm rounded-4 mb-4" id="panel-admin">
+    <div class="card-body p-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h5 class="fw-bold mb-0" style="color: var(--color-primario);">
+                <i class="bi bi-sliders me-2" style="color: var(--color-secundario);"></i>
+                Panel de administrador
+            </h5>
+            <span class="badge badge-rol-admin"><i class="bi bi-shield-check me-1"></i>Solo admin</span>
+        </div>
+
+        <!-- Siempre se indica de dónde salen los datos que se están viendo -->
+        <p class="small text-muted mb-3">
+            <i class="bi bi-database-check me-1"></i>
+            <strong>Origen de los datos en pantalla:</strong> {{ origen }}
+        </p>
+
+        <form action="{{ url_for('tablero.cargar') }}" method="POST" enctype="multipart/form-data">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="archivo_maestro" class="form-label fw-semibold">
+                        <i class="bi bi-people me-1 text-primary"></i> Maestro de estudiantes
+                    </label>
+                    <input class="form-control" type="file" id="archivo_maestro" name="archivo_maestro"
+                           accept=".xlsx" required>
+                    <div class="form-text">Hoja <code>Estudiantes</code> en formato .xlsx</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="archivo_evaluaciones" class="form-label fw-semibold">
+                        <i class="bi bi-journal-check me-1 text-primary"></i> Registro de evaluaciones
+                    </label>
+                    <input class="form-control" type="file" id="archivo_evaluaciones" name="archivo_evaluaciones"
+                           accept=".xlsx" required>
+                    <div class="form-text">Hoja <code>Evaluaciones</code> en formato .xlsx</div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <button type="submit" name="accion" value="ver" class="btn btn-dorado">
+                    <i class="bi bi-table me-1"></i> Procesar y ver en pantalla
+                </button>
+                <button type="submit" name="accion" value="excel" class="btn btn-marino">
+                    <i class="bi bi-file-earmark-excel me-1"></i> Procesar y descargar Excel
+                </button>
+                <a href="{{ url_for('tablero.descargar_excel_fabrica') }}" class="btn btn-outline-secondary ms-md-auto">
+                    <i class="bi bi-download me-1"></i> Descargar resultados de fábrica
+                </a>
+            </div>
+
+            <div class="form-text mt-3">
+                <i class="bi bi-memory me-1"></i>
+                Los archivos se leen en memoria y no se guardan en el disco.
+                Máximo 4 MB por envío.
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Tarjetas de Métricas Principales (3 Contadores Grandes) -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="tarjeta-metrica aprobacion">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="metrica-titulo">Certificados de Aprobación</span>
+                <i class="bi bi-patch-check-fill fs-3 text-success"></i>
+            </div>
+            <div class="metrica-numero text-success">{{ totales.get('Aprobación', 0) }}</div>
+            <small class="text-muted mt-2 d-block"><i class="bi bi-info-circle me-1"></i>Promedio &ge; 70 y Asistencia &ge; 80%</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="tarjeta-metrica participacion">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="metrica-titulo">Constancias de Participación</span>
+                <i class="bi bi-journal-bookmark-fill fs-3" style="color: var(--color-secundario);"></i>
+            </div>
+            <div class="metrica-numero" style="color: var(--color-secundario);">{{ totales.get('Participación', 0) }}</div>
+            <small class="text-muted mt-2 d-block"><i class="bi bi-info-circle me-1"></i>Promedio &lt; 70 y Asistencia &ge; 80%</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="tarjeta-metrica sin-cert">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="metrica-titulo">Sin Certificado</span>
+                <i class="bi bi-x-circle-fill fs-3 text-danger"></i>
+            </div>
+            <div class="metrica-numero text-danger">{{ totales.get('Sin certificado', 0) }}</div>
+            <small class="text-muted mt-2 d-block"><i class="bi bi-info-circle me-1"></i>Asistencia &lt; 80%</small>
+        </div>
+    </div>
+</div>
+
+<!-- Cuadro de Inconsistencias (solo visible para el rol admin) -->
+{% if session.get('rol') == 'admin' and inconsistencias %}
+<div class="card card-inconsistencias p-3 mb-4 shadow-sm">
+    <div class="d-flex align-items-center mb-2">
+        <i class="bi bi-exclamation-triangle-fill text-danger fs-4 me-2"></i>
+        <h5 class="fw-bold text-danger mb-0">Inconsistencias Detectadas ({{ inconsistencias|length }})</h5>
+    </div>
+    <p class="text-muted small mb-3">
+        Los siguientes registros presentan anomalías según las reglas del negocio y <strong>no se emiten certificados</strong> para ellos:
+    </p>
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered bg-white align-middle mb-0">
+            <thead class="table-danger text-dark small">
+                <tr>
+                    <th>Tipo de Inconsistencia</th>
+                    <th>Identificación</th>
+                    <th>Estudiante</th>
+                    <th>Programa</th>
+                    <th>Detalle de la Alerta</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inc in inconsistencias %}
+                <tr>
+                    <td class="fw-semibold text-danger">
+                        <i class="bi bi-flag-fill me-1"></i> {{ inc.tipo }}
+                    </td>
+                    <td><code>{{ inc.identificacion }}</code></td>
+                    <td>{{ inc.nombre }}</td>
+                    <td>{{ inc.programa }}</td>
+                    <td class="text-muted small">{{ inc.detalle }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Tabla General de Estudiantes -->
+<div class="card border-0 shadow-sm table-custom mb-4">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-people-fill me-2" style="color: var(--color-primario);"></i>
+            Registro de Estudiantes y Evaluaciones
+        </h5>
+        <span class="badge bg-secondary">{{ estudiantes|length }} Estudiantes Evaluados</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th scope="col" class="ps-3">Identificación</th>
+                    <th scope="col">Estudiante</th>
+                    <th scope="col">Programa</th>
+                    <th scope="col" class="text-center">Promedio</th>
+                    <th scope="col" class="text-center">Asistencia</th>
+                    <th scope="col" class="text-center">Tipo de Certificado</th>
+                    <th scope="col" class="text-center pe-3">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for est in estudiantes %}
+                <tr>
+                    <td class="ps-3"><code>{{ est.identificacion }}</code></td>
+                    <td class="fw-semibold">
+                        {{ est.nombre_completo }}
+                        {% if session.get('rol') == 'admin' and est.alerta %}
+                            <span class="badge bg-danger ms-1 text-white small" title="{{ est.alerta }}">
+                                <i class="bi bi-exclamation-triangle"></i> {{ est.alerta }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted">{{ est.programa }}</td>
+                    <td class="text-center fw-bold">
+                        {% if est.promedio_nota >= 70 %}
+                            <span class="text-success">{{ "%.2f"|format(est.promedio_nota) }}</span>
+                        {% else %}
+                            <span class="text-danger">{{ "%.2f"|format(est.promedio_nota) }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center fw-bold">
+                        {% if est.promedio_asistencia >= 80 %}
+                            <span class="text-success">{{ "%.2f"|format(est.promedio_asistencia) }}%</span>
+                        {% elif est.promedio_asistencia >= 50 %}
+                            <span class="text-warning text-dark">{{ "%.2f"|format(est.promedio_asistencia) }}%</span>
+                        {% else %}
+                            <span class="text-danger">{{ "%.2f"|format(est.promedio_asistencia) }}%</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if est.estado == 'Aprobación' %}
+                            <span class="badge rounded-pill badge-aprobacion">
+                                <i class="bi bi-check-circle-fill me-1"></i> Aprobación
+                            </span>
+                        {% elif est.estado == 'Participación' %}
+                            <span class="badge rounded-pill badge-participacion">
+                                <i class="bi bi-award me-1"></i> Participación
+                            </span>
+                        {% else %}
+                            <span class="badge rounded-pill badge-sincert">
+                                <i class="bi bi-dash-circle me-1"></i> Sin certificado
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center pe-3">
+                        {% if datos_subidos %}
+                            <span class="badge bg-light text-muted border" title="Los datos subidos no se guardan">
+                                <i class="bi bi-display me-1"></i> Solo en pantalla
+                            </span>
+                        {% elif est.emite_certificado %}
+                            <a href="{{ url_for('tablero.descargar_certificado', identificacion=est.identificacion, programa=est.programa) }}" target="_blank" class="btn btn-sm btn-dorado" title="Ver Certificado en PDF">
+                                <i class="bi bi-file-earmark-pdf-fill me-1"></i> Ver PDF
+                            </a>
+                        {% else %}
+                            <span class="badge bg-light text-muted border">
+                                <i class="bi bi-slash-circle me-1"></i> Sin certificado
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        No hay datos registrados aún.
+                        {% if session.get('rol') == 'admin' %}
+                            Dirígete al <a href="#panel-admin">panel de administrador</a> para procesar la información.
+                        {% else %}
+                            Pide al administrador que cargue los datos.
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Sin permiso | Academia Certificados{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 60vh;">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden text-center">
+            <!-- Franja superior con los colores institucionales -->
+            <div class="px-4 py-4" style="background-color: var(--color-primario); border-bottom: 4px solid var(--color-secundario);">
+                <i class="bi bi-shield-lock-fill" style="font-size: 3rem; color: var(--color-secundario);"></i>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <h3 class="fw-bold mb-2" style="color: var(--color-primario);">Sección solo para administradores</h3>
+                <p class="text-muted mb-4">
+                    Tu cuenta no tiene permiso para entrar a esta sección.
+                    Si necesitas realizar esta acción, pide ayuda a la persona administradora del sistema.
+                </p>
+
+                <!-- Datos de la sesión actual -->
+                <div class="rounded-3 border bg-light p-3 mb-4 text-start">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-person-circle" style="color: var(--color-primario);"></i>
+                        <span class="fw-semibold">Sesión actual</span>
+                    </div>
+                    <div class="small mb-1">
+                        <span class="text-muted">Correo:</span>
+                        <code>{{ session.get('correo', 'Sin sesión') }}</code>
+                    </div>
+                    <div class="small">
+                        <span class="text-muted">Rol:</span>
+                        <span class="badge badge-rol-{{ session.get('rol') }} ms-1">
+                            {% if session.get('rol') == 'admin' %}
+                                <i class="bi bi-shield-check me-1"></i>Administrador
+                            {% else %}
+                                <i class="bi bi-person me-1"></i>Usuario
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+                    <a href="{{ url_for('tablero.index') }}" class="btn btn-marino px-4">
+                        <i class="bi bi-speedometer2 me-1"></i> Volver al tablero
+                    </a>
+                    <a href="{{ url_for('auth.salir') }}" class="btn btn-outline-secondary px-4">
+                        <i class="bi bi-box-arrow-right me-1"></i> Salir
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

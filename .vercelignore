@@ -1,0 +1,10 @@
+# Archivos que no necesitan viajar a Vercel
+.env
+.venv/
+.pytest_cache/
+__pycache__/
+*.pyc
+.agents/
+datos_local.db
+tests/
+.git/

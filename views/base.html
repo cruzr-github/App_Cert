@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}App de Certificados | Academia{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --color-primario: #14213D;
+            --color-secundario: #B8923D;
+            --color-fondo: #F4F6F9;
+            --color-blanco: #FFFFFF;
+            --color-texto: #2B2D42;
+        }
+
+        body {
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar-academia {
+            background-color: var(--color-primario);
+            border-bottom: 3px solid var(--color-secundario);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--color-blanco) !important;
+            letter-spacing: 0.5px;
+        }
+
+        .navbar-brand span {
+            color: var(--color-secundario);
+        }
+
+        .btn-dorado {
+            background-color: var(--color-secundario);
+            color: var(--color-primario);
+            font-weight: 600;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-dorado:hover {
+            background-color: #A07E33;
+            color: var(--color-blanco);
+        }
+
+        .btn-marino {
+            background-color: var(--color-primario);
+            color: var(--color-blanco);
+            font-weight: 600;
+            border: 1px solid var(--color-secundario);
+            transition: all 0.2s ease;
+        }
+
+        .btn-marino:hover {
+            background-color: #0F1A30;
+            color: var(--color-secundario);
+        }
+
+        .tarjeta-metrica {
+            background-color: var(--color-blanco);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(20, 33, 61, 0.08);
+            border-top: 4px solid var(--color-primario);
+            transition: transform 0.2s ease;
+        }
+
+        .tarjeta-metrica:hover {
+            transform: translateY(-3px);
+        }
+
+        .tarjeta-metrica.aprobacion {
+            border-top-color: #2A9D8F;
+        }
+
+        .tarjeta-metrica.participacion {
+            border-top-color: var(--color-secundario);
+        }
+
+        .tarjeta-metrica.sin-cert {
+            border-top-color: #E76F51;
+        }
+
+        .metrica-numero {
+            font-size: 2.75rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-top: 0.5rem;
+        }
+
+        .metrica-titulo {
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6C757D;
+        }
+
+        .card-inconsistencias {
+            border-left: 5px solid #E63946;
+            background-color: #FFF5F5;
+            border-radius: 8px;
+        }
+
+        .table-custom {
+            background-color: var(--color-blanco);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(20, 33, 61, 0.06);
+        }
+
+        .table-custom thead {
+            background-color: var(--color-primario);
+            color: var(--color-blanco);
+        }
+
+        .table-custom thead th {
+            font-weight: 600;
+            border: none;
+            padding: 1rem 0.75rem;
+        }
+
+        .badge-aprobacion {
+            background-color: #D8F3DC;
+            color: #1B4332;
+            font-weight: 600;
+            border: 1px solid #74C69D;
+            padding: 0.4rem 0.75rem;
+        }
+
+        .badge-participacion {
+            background-color: #FEF3C7;
+            color: #92400E;
+            font-weight: 600;
+            border: 1px solid #FCD34D;
+            padding: 0.4rem 0.75rem;
+        }
+
+        .badge-sincert {
+            background-color: #FEE2E2;
+            color: #991B1B;
+            font-weight: 600;
+            border: 1px solid #FCA5A5;
+            padding: 0.4rem 0.75rem;
+        }
+
+        footer {
+            margin-top: auto;
+            background-color: var(--color-primario);
+            color: #E0E1DD;
+            padding: 1rem 0;
+            border-top: 2px solid var(--color-secundario);
+        }
+
+        .badge-rol-admin {
+            background-color: var(--color-secundario);
+            color: var(--color-primario);
+            font-weight: 700;
+            padding: 0.4rem 0.65rem;
+        }
+
+        .badge-rol-usuario {
+            background-color: #3E5C8A;
+            color: #FFFFFF;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            font-weight: 600;
+            padding: 0.4rem 0.65rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-academia shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('tablero.index') }}">
+                <i class="bi bi-mortarboard-fill me-2" style="color: var(--color-secundario);"></i>
+                Academia <span>Certificados</span>
+            </a>
+            <div class="ms-auto d-flex align-items-center gap-2 flex-wrap">
+                {% if session.get('correo') %}
+                <!-- Usuario con sesión iniciada: correo, rol y botón de salida -->
+                <span class="text-white-50 small">
+                    <i class="bi bi-person-circle me-1"></i>{{ session.get('correo') }}
+                </span>
+                <span class="badge badge-rol-{{ session.get('rol') }}">
+                    {% if session.get('rol') == 'admin' %}
+                        <i class="bi bi-shield-check me-1"></i>Administrador
+                    {% else %}
+                        <i class="bi bi-person me-1"></i>Usuario
+                    {% endif %}
+                </span>
+                <a href="{{ url_for('tablero.index') }}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-speedometer2 me-1"></i> Tablero
+                </a>
+                {% if session.get('rol') == 'admin' %}
+                <a href="{{ url_for('tablero.index') }}#panel-admin" class="btn btn-dorado btn-sm">
+                    <i class="bi bi-cloud-arrow-up-fill me-1"></i> Panel de carga
+                </a>
+                {% endif %}
+                <a href="{{ url_for('auth.salir') }}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-box-arrow-right me-1"></i> Salir
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mb-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row mb-3">
+                    <div class="col-12">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="text-center text-muted small">
+        <div class="container">
+            <span class="text-light opacity-75">Sistema de Emisión de Certificados &bull; Reglas fijas en Python &bull; Supabase PostgreSQL</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
