@@ -23,9 +23,9 @@ uv run pytest
 
 ## Despliegue en Vercel
 
-El punto de entrada es `api/index.py`. Vercel instala las dependencias desde
-`requirements.txt` y `vercel.json` incluye en la función las plantillas y los
-Excel de `insumos/`.
+Vercel detecta automáticamente la aplicación Flask en `app.py`. No se necesitan
+reescrituras de rutas ni un archivo `api/index.py`. `vercel.json` solo configura
+la duración máxima y los archivos que deben incluirse (plantillas y `insumos/`).
 
 En **Project Settings → Environment Variables** configura:
 
