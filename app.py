@@ -38,6 +38,23 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(tablero_bp)
 
 
+@app.errorhandler(404)
+def diagnostico_404(error):
+    """Temporal: muestra qué ruta recibe Flask desde Vercel."""
+    from flask import jsonify, request
+
+    return jsonify(
+        {
+            "path": request.path,
+            "script_root": request.script_root,
+            "url": request.url,
+            "x_forwarded_uri": request.headers.get("x-forwarded-uri"),
+            "x_original_url": request.headers.get("x-original-url"),
+            "x_vercel_forwarded_path": request.headers.get("x-vercel-forwarded-path"),
+        }
+    ), 404
+
+
 @app.errorhandler(413)
 def archivo_demasiado_grande(error):
     """Avisa con un mensaje claro cuando el envío supera el límite de 4 MB."""
